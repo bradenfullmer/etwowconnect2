@@ -184,11 +184,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _lockOn() {
-    _send([0x55, 0x05, 0x05, 0x01]);
+    _send([0x05, 0x05, 0x01]);
   }
 
   void _lockOff() {
-    _send([0x55, 0x05, 0x05, 0x00]);
+    _send([0x05, 0x05, 0x00]);
   }
 
   void _lightOn() {
@@ -205,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _setSpeed(int mode) {
-    _send([0x55, 0x02, 0x05, mode]);
+    _send([0x02, 0x05, mode]);
   }
 
   void _zeroOn() {
@@ -231,14 +231,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 icon: const Icon(Icons.lock_open),
                 color: Colors.green,
                 tooltip: 'Lock',
-                onPressed: _lockOff,
+                onPressed: _locked ?? false ? _lockOff : null,
                 iconSize: 120,
               ),
               IconButton(
                 icon: const Icon(Icons.lock),
                 color: Colors.red,
                 tooltip: 'Lock',
-                onPressed: _lockOn,
+                onPressed: _locked ?? true ? null : _lockOn,
                 iconSize: 120,
               ),
             ],

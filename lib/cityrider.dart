@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'E-Twow GT SE Unofficial App',
       theme: ThemeData(
-        primarySwatch: Colors.grey,
+        primarySwatch: Colors.amber,
       ),
       home: MyHomePage(title: 'E-Twow GT SE Unofficial App'),
     );
@@ -33,9 +33,50 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _ble = FlutterReactiveBle();
-  final _serviceId = Uuid.parse("0000ff00-0000-1000-8000-00805f9b34fb");
-  final _serviceIdRead = Uuid.parse("0000ff01-0000-1000-8000-00805f9b34fb");
-  final _characteristicId = Uuid.parse("0000ff02-0000-1000-8000-00805f9b34fb");
+
+  // final _serviceId = Uuid.parse("0000ff00-0000-1000-8000-00805f9b34fb");
+  // final _serviceIdRead = Uuid.parse("0000ff01-0000-1000-8000-00805f9b34fb");
+  // final _characteristicId = Uuid.parse("0000ff02-0000-1000-8000-00805f9b34fb");
+
+  //Works
+  //final _serviceId = Uuid.parse("0000ff00-0000-1000-8000-00805f9b34fb");
+  final _serviceId = Uuid.parse("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+
+  //works
+  //final _serviceIdRead = Uuid.parse("0000ff01-0000-1000-8000-00805f9b34fb");
+
+  //testinng
+  final _serviceIdRead = Uuid.parse("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+
+  //no errors
+  //final _characteristicId = Uuid.parse("0000ff01-0000-1000-8000-00805f9b34fb");
+
+  final _characteristicId = Uuid.parse("00001801-0000-1000-8000-00805f9b34fb");
+  final _characteristicIdRead =
+      Uuid.parse("0000fff1-0000-1000-8000-00805f9b34fb");
+
+  //not found
+  //final _characteristicId = Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb");
+  //final _characteristicId = Uuid.parse("0000ae02-0000-1000-8000-00805f9b34fb");
+  //final _characteristicId = Uuid.parse("0000ae01-0000-1000-8000-00805f9b34fb");
+
+  //testing
+  List<Uuid> chars = [
+    Uuid.parse('6E400002-B5A3-F393-E0A9-E50E24DCCA9E'),
+    Uuid.parse('6E400001-B5A3-F393-E0A9-E50E24DCCA9E'),
+    Uuid.parse('6E400003-B5A3-F393-E0A9-E50E24DCCA9E'),
+    Uuid.parse('0000ae02-0000-1000-8000-00805f9b34fb'),
+    Uuid.parse('0000ae00-0000-1000-8000-00805f9b34fb'),
+    Uuid.parse('0000ae01-0000-1000-8000-00805f9b34fb'),
+    Uuid.parse('0000fff2-0000-1000-8000-00805f9b34fb'),
+    Uuid.parse('0000fff3-0000-1000-8000-00805f9b34fb'),
+    Uuid.parse('0000fff4-0000-1000-8000-00805f9b34fb'),
+    Uuid.parse('0000fff7-0000-1000-8000-00805f9b34fb'),
+    Uuid.parse('0000fff1-0000-1000-8000-00805f9b34fb'),
+    Uuid.parse('0000fff0-0000-1000-8000-00805f9b34fb'),
+    Uuid.parse('0000ffe0-0000-1000-8000-00805f9b34fb'),
+  ];
+
   late StreamSubscription<DiscoveredDevice> listener;
   bool? _locked;
   bool? _zeroStart;
@@ -47,6 +88,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int? _speed;
   String? _id;
   ConnectionStateUpdate? _connectionState;
+
+  bool found = false;
 
   bool get _connected =>
       _connectionState?.connectionState == DeviceConnectionState.connected;
@@ -63,9 +106,14 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_id != null) {
       return listenToDevice(_id!);
     }
+
     listener = _ble.scanForDevices(withServices: []).listen((device) async {
-      if (device.name.contains("GTSport")) {
+      //if (device.name.contains("GTSport")) {
+      if (device.name.contains("M0Robot272757")) {
         //print('----------------- Device' + device.toString());
+        //final services = _ble.discoverServices(device.id);
+
+        //print('------------------ Services' + services.toString());
         setState(() {
           _id = device.id;
         });
@@ -83,21 +131,78 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void listenToDevice(String id) {
-    _ble.connectToDevice(id: id).listen((connectionState) {
+    _ble.connectToDevice(id: id).listen((connectionState) async {
       setState(() {
         _connectionState = connectionState;
       });
       if (_connected) {
+        print('Vlads::Connected');
+
         final characteristic = QualifiedCharacteristic(
-            serviceId: _serviceIdRead,
-            //serviceId: _serviceId,
-            //characteristicId: _characteristicId,
+            serviceId: _serviceId,
             characteristicId: _serviceIdRead,
             deviceId: _id!);
 
-        _ble
-            .subscribeToCharacteristic(characteristic)
-            .listen((values) => _ventiveProcess(values));
+        var resop = _ble.readCharacteristic(characteristic);
+
+        print(resop);
+
+        /*
+
+        
+
+        _ble.subscribeToCharacteristic(characteristic).listen((data) {
+          print("Vlads::success" + data.toString());
+        }, onError: (dynamic error) {
+          print("Vlads::error" + error.toString());
+        });
+
+        _ble.readCharacteristic(characteristic);*/
+
+        return;
+
+        // print('loop');
+        // chars.forEach((item) {
+        //   if (found) {
+        //     return;
+        //   }
+
+        //   print('Trying:' + item.toString());
+
+        //   var char = QualifiedCharacteristic(
+        //       serviceId: _serviceId, characteristicId: item, deviceId: _id!);
+
+        //   trySub(char);
+        //   _ble.readCharacteristic(char);
+        // });
+
+        // return;
+
+        // print('Vlads::listen');
+
+        // final characteristic = QualifiedCharacteristic(
+        //     serviceId: _serviceId,
+        //     // serviceId: _serviceId,
+        //     // characteristicId: _characteristicId,
+        //     // characteristicId: _serviceIdRead,
+        //     characteristicId: _characteristicId,
+        //     deviceId: _id!);
+
+        // _ble.subscribeToCharacteristic(characteristic).listen((data) {
+        //   print("Vlads::success" + data.toString());
+        // }, onError: (dynamic error) {
+        //   print("Vlads::error" + error.toString());
+        // });
+
+        // _ble.readCharacteristic(characteristic);
+
+        // _ble
+        //     .subscribeToCharacteristic(characteristic)
+        //     .listen((values) => _ventiveProcess(values));
+
+        //enable notify charactaristics
+        //_ble.writeCharacteristicWithResponse(characteristic, value: [0x01,0x01,]);
+
       } else if (_disconnected) {
         setState(() {
           _locked = null;
@@ -113,10 +218,28 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void trySub(char) {
+    _ble.subscribeToCharacteristic(char).listen((data) {
+      print("Vlads::success" + data.toString());
+
+      _ble.subscribeToCharacteristic(char).listen((data) {
+        print("Vlads::success" + data.toString());
+      }, onError: (dynamic error) {
+        print("Vlads::error" + error.toString());
+      });
+
+      found = true;
+    }, onError: (dynamic error) {
+      print("Vlads::error" + error.toString());
+      found = false;
+    });
+  }
+
   void _ventiveProcess(List<int> values) {
     print('Vlads::Current' + values.toString());
 
-    _updateReadCharacteristics(values);
+    //_updateReadCharacteristics(values);
+    return;
   }
 
   void _updateReadCharacteristics(List<int> values) {
@@ -152,11 +275,11 @@ class _MyHomePageState extends State<MyHomePage> {
       case 5:
         setState(() {
           _odo = values[3] + values[4] + values[5];
-          print(values[3].toString() +
-              '     ' +
-              values[4].toString() +
-              '     ' +
-              values[5].toString());
+          // print(values[3].toString() +
+          //     '     ' +
+          //     values[4].toString() +
+          //     '     ' +
+          //     values[5].toString());
         });
         break;
       default:
@@ -184,11 +307,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _lockOn() {
-    _send([0x55, 0x05, 0x05, 0x01]);
+    _send([0x05, 0x05, 0x01]);
   }
 
   void _lockOff() {
-    _send([0x55, 0x05, 0x05, 0x00]);
+    _send([0x05, 0x05, 0x00]);
   }
 
   void _lightOn() {
@@ -205,7 +328,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _setSpeed(int mode) {
-    _send([0x55, 0x02, 0x05, mode]);
+    _send([0x02, 0x05, mode]);
   }
 
   void _zeroOn() {
@@ -231,14 +354,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 icon: const Icon(Icons.lock_open),
                 color: Colors.green,
                 tooltip: 'Lock',
-                onPressed: _lockOff,
+                onPressed: _locked ?? false ? _lockOff : null,
                 iconSize: 120,
               ),
               IconButton(
                 icon: const Icon(Icons.lock),
                 color: Colors.red,
                 tooltip: 'Lock',
-                onPressed: _lockOn,
+                onPressed: _locked ?? true ? null : _lockOn,
                 iconSize: 120,
               ),
             ],
